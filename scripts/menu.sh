@@ -28,7 +28,7 @@ trap "rm -f $tmp_file" EXIT
 echo "$actions" | tr ',' '\n' | cut -d: -f1 > "$tmp_file.labels"
 
 # Run fzf in popup, write selection to tmp file
-tmux display-popup -E -w 60% -h 40% -d "$dir" \
+tmux display-popup -E -T " Select Action " -w 60% -h 40% -d "$dir" \
     "cat '$tmp_file.labels' | fzf --prompt='popup> ' --reverse > '$tmp_file'"
 
 selected=$(cat "$tmp_file" 2>/dev/null)
@@ -36,5 +36,5 @@ rm -f "$tmp_file.labels"
 
 if [ -n "$selected" ]; then
     cmd=$(echo "$actions" | tr ',' '\n' | grep "^${selected}:" | cut -d: -f2-)
-    tmux display-popup -E -w 80% -h 80% -d "$dir" "$shell -lic \"$cmd\""
+    tmux display-popup -E -T " $selected " -w 80% -h 80% -d "$dir" "$shell -lic \"$cmd\""
 fi

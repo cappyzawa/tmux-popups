@@ -8,4 +8,5 @@ dir=$(tmux display -p "#{pane_current_path}")
 shell=$(tmux show-option -gv default-shell)
 
 # Open popup aligned to current pane
-tmux display-popup -E -w "$width" -h 40% -x "$x" -y "$y" -d "$dir" "$shell --login"
+shell_name=$(basename "$shell")
+tmux display-popup -E -T " $shell_name " -w "$width" -h 40% -x "$x" -y "$y" -d "$dir" "$shell --login"
