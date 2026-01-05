@@ -13,7 +13,7 @@ get_tmux_option() {
 }
 
 # Default actions: label:command format, comma separated
-default_actions='shell:$SHELL,lazygit:lazygit'
+default_actions='shell:$SHELL -l,lazygit:lazygit'
 
 actions=$(get_tmux_option "@popup_actions" "$default_actions")
 dir=$(tmux display -p "#{pane_current_path}")
