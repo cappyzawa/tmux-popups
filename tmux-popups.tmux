@@ -2,8 +2,9 @@
 
 CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Default key binding (can be overridden with @popup_key)
+# Default key bindings
 default_popup_key="f"
+default_popup_menu_key="F"
 
 get_tmux_option() {
     local option="$1"
@@ -19,9 +20,13 @@ get_tmux_option() {
 
 main() {
     local popup_key
+    local popup_menu_key
+
     popup_key=$(get_tmux_option "@popup_key" "$default_popup_key")
+    popup_menu_key=$(get_tmux_option "@popup_menu_key" "$default_popup_menu_key")
 
     tmux bind-key "$popup_key" run-shell "$CURRENT_DIR/scripts/popup.sh"
+    tmux bind-key "$popup_menu_key" run-shell "$CURRENT_DIR/scripts/menu.sh"
 }
 
 main
