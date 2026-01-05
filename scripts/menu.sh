@@ -12,20 +12,29 @@ get_tmux_option() {
     fi
 }
 
-# Default actions: label:command format, comma separated
-default_actions='shell:$SHELL -l,lazygit:lazygit'
-
-actions=$(get_tmux_option "@popup_actions" "$default_actions")
+shell=$(tmux show-option -gv default-shell)
 dir=$(tmux display -p "#{pane_current_path}")
 
-# Parse actions and show menu with fzf
-selected=$(echo "$actions" | tr ',' '\n' | cut -d: -f1 | fzf --prompt="popup> " --height=40% --reverse)
+# Default actions: label:command format, comma separated
+default_actions="shell:$shell --login,lazygit:lazygit"
+
+actions=$(get_tmux_option "@popup_actions" "$default_actions")
+
+# Temp file for selection
+tmp_file=$(mktemp)
+trap "rm -f $tmp_file" EXIT
+
+# Write actions to temp file for fzf
+echo "$actions" | tr ',' '\n' | cut -d: -f1 > "$tmp_file.labels"
+
+# Run fzf in popup, write selection to tmp file
+tmux display-popup -E -w 60% -h 40% -d "$dir" \
+    "cat '$tmp_file.labels' | fzf --prompt='popup> ' --reverse > '$tmp_file'"
+
+selected=$(cat "$tmp_file" 2>/dev/null)
+rm -f "$tmp_file.labels"
 
 if [ -n "$selected" ]; then
-    # Find the command for selected label
     cmd=$(echo "$actions" | tr ',' '\n' | grep "^${selected}:" | cut -d: -f2-)
-    # Expand variables like $SHELL
-    cmd=$(eval echo "$cmd")
-
-    tmux display-popup -E -w 80% -h 80% -d "$dir" "$cmd"
+    tmux display-popup -E -w 80% -h 80% -d "$dir" "$shell -lic \"$cmd\""
 fi
