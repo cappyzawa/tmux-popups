@@ -15,6 +15,12 @@ get_tmux_option() {
 shell=$(tmux show-option -gv default-shell)
 dir=$(tmux display -p "#{pane_current_path}")
 
+# Get size options
+menu_width=$(get_tmux_option "@popup_menu_width" "60%")
+menu_height=$(get_tmux_option "@popup_menu_height" "40%")
+action_width=$(get_tmux_option "@popup_action_width" "80%")
+action_height=$(get_tmux_option "@popup_action_height" "80%")
+
 # Default actions: label:command format, comma separated
 default_actions="shell:$shell --login,lazygit:lazygit"
 
@@ -28,7 +34,7 @@ trap "rm -f $tmp_file" EXIT
 echo "$actions" | tr ',' '\n' | cut -d: -f1 > "$tmp_file.labels"
 
 # Run fzf in popup, write selection to tmp file
-tmux display-popup -E -T " Select Action " -w 60% -h 40% -d "$dir" \
+tmux display-popup -E -T " Select Action " -w "$menu_width" -h "$menu_height" -d "$dir" \
     "cat '$tmp_file.labels' | fzf --prompt='popup> ' --reverse > '$tmp_file'"
 
 selected=$(cat "$tmp_file" 2>/dev/null)
@@ -36,5 +42,5 @@ rm -f "$tmp_file.labels"
 
 if [ -n "$selected" ]; then
     cmd=$(echo "$actions" | tr ',' '\n' | grep "^${selected}:" | cut -d: -f2-)
-    tmux display-popup -E -T " $selected " -w 80% -h 80% -d "$dir" "$shell -lic \"$cmd\""
+    tmux display-popup -E -T " $selected " -w "$action_width" -h "$action_height" -d "$dir" "$shell -lic \"$cmd\""
 fi
