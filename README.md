@@ -24,6 +24,10 @@ Then press `prefix + I` to install.
 | `prefix + f` | Open popup shell (pane-aligned) |
 | `prefix + F` | Open action menu (fzf) |
 
+> [!NOTE]
+> Popup windows close automatically when the process inside them exits.
+> While a popup is open, other pane operations are blocked (tmux behavior).
+
 ## Configuration
 
 ### Key bindings
