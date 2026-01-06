@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 
-CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Default key bindings
-default_popup_key="f"
-default_popup_menu_key="F"
+# tmux-popups: Simple popup command launcher
+#
+# Usage in .tmux.conf:
+#   set -g @popup_g 'lazygit'
+#   set -g @popup_G 'gh dash'
+#
+# Options:
+#   @popup_width  - Popup width (default: 80%)
+#   @popup_height - Popup height (default: 80%)
+#   @popup_shell  - Shell to use (default: zsh -ic)
 
 get_tmux_option() {
     local option="$1"
@@ -19,14 +24,28 @@ get_tmux_option() {
 }
 
 main() {
-    local popup_key
-    local popup_menu_key
+    local width height shell
 
-    popup_key=$(get_tmux_option "@popup_key" "$default_popup_key")
-    popup_menu_key=$(get_tmux_option "@popup_menu_key" "$default_popup_menu_key")
+    width=$(get_tmux_option "@popup_width" "80%")
+    height=$(get_tmux_option "@popup_height" "80%")
+    shell=$(get_tmux_option "@popup_shell" "zsh -ic")
 
-    tmux bind-key "$popup_key" run-shell "$CURRENT_DIR/scripts/popup.sh"
-    tmux bind-key "$popup_menu_key" run-shell "$CURRENT_DIR/scripts/menu.sh"
+    # Read all @popup_X options and create keybindings
+    while IFS= read -r line; do
+        # Skip @popup_width, @popup_height, @popup_shell
+        case "$line" in
+            @popup_width*|@popup_height*|@popup_shell*) continue ;;
+        esac
+
+        # Extract key and command from @popup_X "command"
+        if [[ "$line" =~ ^@popup_(.+)[[:space:]][\"\']?([^\"\']+)[\"\']?$ ]]; then
+            key="${BASH_REMATCH[1]}"
+            cmd="${BASH_REMATCH[2]}"
+
+            tmux bind-key "$key" display-popup -E -T " $cmd " -w "$width" -h "$height" \
+                -d "#{pane_current_path}" "$shell '$cmd'"
+        fi
+    done < <(tmux show-options -g 2>/dev/null | grep "^@popup_")
 }
 
 main
