@@ -12,7 +12,8 @@
 #   @popup_prefix - Prefix key for popup table (default: C-p)
 #   @popup_width  - Popup width (default: 80%)
 #   @popup_height - Popup height (default: 80%)
-#   @popup_shell  - Shell to use (default: zsh -ic)
+
+CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 get_tmux_option() {
     local option="$1"
@@ -27,12 +28,11 @@ get_tmux_option() {
 }
 
 main() {
-    local prefix width height shell table_opt
+    local prefix width height table_opt
 
     prefix=$(get_tmux_option "@popup_prefix" "C-p")
     width=$(get_tmux_option "@popup_width" "80%")
     height=$(get_tmux_option "@popup_height" "80%")
-    shell=$(get_tmux_option "@popup_shell" "zsh -ic")
 
     # If prefix is set, use key table
     if [ -n "$prefix" ]; then
@@ -46,17 +46,18 @@ main() {
     while IFS= read -r line; do
         # Skip reserved options
         case "$line" in
-            @popup_width*|@popup_height*|@popup_shell*|@popup_prefix*) continue ;;
+            @popup_width*|@popup_height*|@popup_prefix*) continue ;;
         esac
 
-        # Extract key and command from @popup_X "command"
-        if [[ "$line" =~ ^@popup_([^[:space:]]+)[[:space:]]+[\"\']?([^\"\']+)[\"\']?$ ]]; then
-            key="${BASH_REMATCH[1]}"
-            cmd="${BASH_REMATCH[2]}"
+        # Extract key from @popup_X
+        key="${line#@popup_}"
+        key="${key%% *}"
 
+        if [ -n "$key" ]; then
             # shellcheck disable=SC2086
-            tmux bind-key $table_opt "$key" display-popup -E -T " $cmd " -w "$width" -h "$height" \
-                -d "#{pane_current_path}" "$shell '$cmd'"
+            tmux bind-key $table_opt "$key" display-popup -E -T " popup: $key " \
+                -w "$width" -h "$height" -d "#{pane_current_path}" \
+                "$CURRENT_DIR/scripts/popup-runner.sh '$key'"
         fi
     done < <(tmux show-options -g 2>/dev/null | grep "^@popup_")
 }

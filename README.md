@@ -22,28 +22,26 @@ Define popup commands with `@popup_<key>`:
 
 ```tmux
 set -g @popup_g 'lazygit'
-set -g @popup_G 'gh dash'
-set -g @popup_k 'k9s'
+set -g @popup_l 'gh cd -p 1'
 ```
 
 This creates:
-- `prefix + g` → opens lazygit in popup
-- `prefix + G` → opens gh dash in popup
-- `prefix + k` → opens k9s in popup
+- `prefix + C-p g` → opens lazygit in popup
+- `prefix + C-p l` → opens gh cd in popup
 
 ## Configuration
+
+### Prefix key
+
+```tmux
+set -g @popup_prefix 'C-p'  # default: C-p
+```
 
 ### Popup size
 
 ```tmux
 set -g @popup_width '80%'   # default: 80%
 set -g @popup_height '80%'  # default: 80%
-```
-
-### Shell
-
-```tmux
-set -g @popup_shell 'zsh -ic'  # default: zsh -ic
 ```
 
 > [!NOTE]
