@@ -54,8 +54,15 @@ main() {
         key="${key%% *}"
 
         if [ -n "$key" ]; then
+            # Get command for title
+            cmd="${line#*@popup_$key }"
+            cmd="${cmd#\"}"
+            cmd="${cmd%\"}"
+            cmd="${cmd#\'}"
+            cmd="${cmd%\'}"
+
             # shellcheck disable=SC2086
-            tmux bind-key $table_opt "$key" display-popup -E -T " popup: $key " \
+            tmux bind-key $table_opt "$key" display-popup -E -T " $cmd " \
                 -w "$width" -h "$height" -d "#{pane_current_path}" \
                 "$CURRENT_DIR/scripts/popup-runner.sh '$key'"
         fi
